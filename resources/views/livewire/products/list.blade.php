@@ -20,7 +20,7 @@
                                         <h4 class=""><b>{{ $category->name }}</b></h4>
                                     </div>
                                     <div class="card-body text-center" style="background:#f7f7f7;">
-                                        <img src="{{ asset('../storage/app/public/categories/' . $category->image) }}" width="50%" alt="">
+                                        <img src="{{ asset('../storage/categories/' . $category->image) }}" width="50%" alt="">
                                     </div>
                                     <div class="card-body text-center" style="background:#f7f7f7;">
                                         <div class="row">
