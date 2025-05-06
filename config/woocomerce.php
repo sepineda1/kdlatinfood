@@ -1,0 +1,7 @@
+<?php
+
+return [
+    'URL' => env('WOOCOMMERCE_STORE_URL'),
+    'CONSUMER_KEY' => env('WOOCOMMERCE_CONSUMER_KEY'),
+    'CONSUMER_SECRET' => env('WOOCOMMERCE_CONSUMER_SECRET'),
+];
