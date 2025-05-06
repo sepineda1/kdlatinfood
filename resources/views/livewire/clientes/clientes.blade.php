@@ -271,8 +271,11 @@
                                     <div class="card"
                                         style="border-radius: 15px;background-color:#f9f9f9;border:none !important;">
                                         <div class="card-body">
+                                            @php
+                                                $path = 'customers/' . $cliente->image;
+                                            @endphp
                                             <img width="100px" height="100px"
-                                                 src="{{ Storage::disk('public')->exists($path) ? asset('storage/' . $path) : asset('storage/noimg.jpg') }}"
+                                                src="{{ Storage::disk('public')->exists($path) ? asset('storage/' . $path) : asset('storage/noimg.jpg') }}"
                                                 class="text-center mb-4" style="border-radius:50%;"
                                                 alt="Imagen del usuario">
                                             <h6 class="card-title card-space">{{ $cliente->name }}
@@ -912,7 +915,8 @@
 
                                         <div class="form-group mb-2">
                                             <label><i class="fas fa-weight-hanging"></i> Elija un producto</label>
-                                            <select  wire:model.lazy="input_presentacion_id" id="presentacion_select" class="form-control" size="6">
+                                            <select wire:model.lazy="input_presentacion_id" id="presentacion_select"
+                                                class="form-control" size="6">
                                                 <option value="">-- Seleccione un producto --</option>
                                                 @foreach ($presentaciones as $item)
                                                     <option value="{{ $item->id }}"
@@ -931,8 +935,8 @@
                                             style="background-color: #f8f7f7 !important;">
                                     </div>
                                     <div>
-                                        <button class="btn w-100 text-white" 
-                                            wire:click.prevent="saveDiscount()" onclick="cleanInput()" style="background-color: #fa7233"><i
+                                        <button class="btn w-100 text-white" wire:click.prevent="saveDiscount()"
+                                            onclick="cleanInput()" style="background-color: #fa7233"><i
                                                 class="fas fa-save"></i> Guardar Descuento</button>
                                     </div>
                                 </form>
