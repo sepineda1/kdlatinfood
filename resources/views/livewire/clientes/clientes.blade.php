@@ -272,7 +272,7 @@
                                         style="border-radius: 15px;background-color:#f9f9f9;border:none !important;">
                                         <div class="card-body">
                                             <img width="100px" height="100px"
-                                                src="{{ \Illuminate\Support\Facades\Storage::exists('storage/customers/' . $cliente->image) ? asset('storage/customers/' . $cliente->image) : asset('storage/noimg.jpg') }}"
+                                                 src="{{ Storage::disk('public')->exists($path) ? asset('storage/' . $path) : asset('storage/noimg.jpg') }}"
                                                 class="text-center mb-4" style="border-radius:50%;"
                                                 alt="Imagen del usuario">
                                             <h6 class="card-title card-space">{{ $cliente->name }}
