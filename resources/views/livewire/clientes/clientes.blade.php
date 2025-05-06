@@ -385,7 +385,7 @@
                         </div>
 
                         <div id="accordion">
-
+                            {{--
                             @foreach ($data as $cliente)
                                 <div class="card d-none">
 
@@ -640,6 +640,7 @@
                                     </div>
                                 </div><br>
                             @endforeach
+                            --}}
                             @include('livewire.clientes.form')
                             @include('livewire.clientes.sales-detail')
                             @include('livewire.clientes.info')
