@@ -23,7 +23,7 @@ use App\Models\Sale;
 class QuickBooksService
 {
     protected $dataService;
-    protected static $disabled = false; //¿Está desabilitado Si o No?
+    protected static $disabled = true; //¿Está desabilitado Si o No?
 
   
     public static function disable($status = true)
