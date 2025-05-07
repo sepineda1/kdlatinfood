@@ -10,6 +10,9 @@ use App\Models\Customer;
 use App\Services\QuickBooksService;
 use Exception;
 use Illuminate\Support\Facades\DB;
+use App\Models\Lotes;
+use Illuminate\Support\Facades\Log;
+
 trait SaleTrait{
 
 
@@ -119,7 +122,9 @@ trait SaleTrait{
 
                 if($ModelSale->status_envio === "ACTUAL"){
                     //Simular escaneo
-                    $LoteForPresentacion = $this->haveLot($ModelPresentacion->id);
+                    $LoteForPresentacion = Lotes::where('SKU', $ModelPresentacion->id)
+                    ->where('Fecha_Vencimiento', '>=', now()) // Solo considera fechas futuras o actuales
+                    ->orderBy('Fecha_Vencimiento', 'asc')->first();
                     $newSaleDetail->lot_id = $LoteForPresentacion->id;
                     $newSaleDetail->scanned = true;
                     $newSaleDetail->save();
@@ -169,7 +174,7 @@ trait SaleTrait{
                         'seccion' => 'Despachos'
                     ]);
                 }catch(Exception $e){
-                    \Log::error('No se pudo agregar el mensaje al inspector en la seccion de agregar producto a la orden: ' . $e);
+                    Log::error('No se pudo agregar el mensaje al inspector en la seccion de agregar producto a la orden: ' . $e);
                 }
  
             }

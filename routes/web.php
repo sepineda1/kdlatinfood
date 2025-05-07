@@ -292,6 +292,6 @@ Route::get('conte2', function () {
 //rutas utils
 Route::get('select2', Select2::class);
 
-URL::forceScheme('https');
+//URL::forceScheme('https');
 
 Route::get('/testUpdate/{sale_id}', [QuickBooksService::class, 'create_invoice']);

@@ -38,7 +38,7 @@ class Dash extends Component
             DB::raw('SUM(sale_details.quantity) as total_sold')
         )
         ->join('sale_details', 'sale_details.presentaciones_id', '=', 'products.id')
-        ->groupBy('products.id')
+        ->groupBy('products.id', 'products.name')
         ->orderBy('total_sold', 'DESC')
         ->first();
        

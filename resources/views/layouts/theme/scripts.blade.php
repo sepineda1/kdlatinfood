@@ -69,6 +69,5 @@ Oyarcegroup.com retains full ownership of this software, including all intellect
 
 <script src="{{ asset('plugins/flatpickr/flatpickr.js')}}"></script>
 
-
 @livewireScripts
 
