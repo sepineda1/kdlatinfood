@@ -16,6 +16,7 @@ class CreateCatalogoPaymentTypesTable extends Migration
         Schema::create('catalogo_payment_types', function (Blueprint $table) {
             $table->id();
             $table->string('name');
+            $table->tinyInteger('deleted')->default(0);
             $table->timestamps();
         });
     }

@@ -4,6 +4,8 @@ namespace App\Contracts;
 use Illuminate\Database\Eloquent\Collection;
 use App\Models\DeliveryType;
 use App\Models\CatalogoDeliveryType;
+
+
 interface DeliveryTypeServiceInterface
 {
     public function find(int $id): DeliveryType;

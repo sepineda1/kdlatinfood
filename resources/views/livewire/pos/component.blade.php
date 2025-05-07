@@ -3,6 +3,7 @@
     <div class="row layout-top-spacing">
 
         <div class="col-sm-12 col-md-8">
+           
             <!-- DETALLES -->
             @include('livewire.pos.partials.detail')
         </div>

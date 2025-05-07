@@ -13,7 +13,17 @@ class CatalogoPaymentType extends Model
     protected $table = 'catalogo_payment_types';
 
     // Campos que pueden asignarse masivamente
-    protected $fillable = [
-        'name',
-    ];    
+    protected $fillable = ['name', 'deleted'];
+    
+    protected $casts = [
+        'deleted' => 'boolean',
+    ];
+
+    // Aplica un filtro global para excluir los eliminados
+    protected static function booted()
+    {
+        static::addGlobalScope('not_deleted', function ($query) {
+            $query->where('deleted', 0);
+        });
+    }
 }

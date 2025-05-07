@@ -60,7 +60,10 @@ class Sale extends Model
     {
         return $this->hasMany(DeliveryType::class, 'sale_id');
     }
-
+    public function payment_type()
+    {
+        return $this->belongsTo(CatalogoPaymentType::class, 'payment_type_id', 'id');
+    }
 
     // MUTATORS
     /*

@@ -4,9 +4,13 @@
         <div class="card simple-title-task ui-sortable-handle">
             <div class="card-body">
           
-                @if($total > 0)
-                <div class="table-responsive tblscroll" style="max-height: 650px; overflow: hidden">
-                    <div class="text-center"><h4><b> <i class="fas fa-egg"></i> Productos</b></h4></div>
+                <div class="text-center"><h4><b> <i class="fas fa-egg"></i> Productos</b></h4></div>
+
+                @include('livewire.pos.partials.search')
+
+                <div class="" style="max-height: 850px !important; overflow-y: auto">
+                
+
                     <table class="table table-bordered table-striped mt-1">
                         <thead class="text-white" style="background: #FF5100">
                             
@@ -20,6 +24,7 @@
                                 <th style="font-size: 12px" class="table-th text-center text-white">ACTIONS</th>
                             </tr>
                         </thead>
+                        @if($total > 0)
                         <tbody>
                
                             @foreach($cart as $item)
@@ -80,11 +85,18 @@
                             </tr>
                             @endforeach
                         </tbody>
+
+                        @else
+                            <tr>
+                                <td colspan="7" class="text-center">
+                                    No hay productos en el carrito.
+                                </td>
+                            </tr>
+                        
+                        @endif
                     </table>
                 </div>
-                @else
-                <h5 class="text-center text-muted">Agrega Productos Al Carrito</h5>
-                @endif
+           
 
                 <!--
 		<div wire:loading.inline wire:target="saveSale">

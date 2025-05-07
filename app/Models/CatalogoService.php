@@ -25,6 +25,7 @@ class CatalogoService extends Model
         return $this->hasMany(ServicePay::class, 'catalogo_service_id');
     }
 
+    // Aplica un filtro global para excluir los eliminados
     protected static function booted()
     {
         static::addGlobalScope('not_deleted', function ($query) {

@@ -190,7 +190,7 @@ class ProductsController extends Component
             ];
         })->toArray();
     }
-
+    
     public function showPresentations($productId)
     {
         $this->selected_id = $productId;

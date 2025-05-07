@@ -864,7 +864,7 @@ class PosController extends Component
 			}
 			return $item;
 		});
-
+		$products = Presentacion::where('visible', 'si')->get();
 		//$this->total = $this->total - $this->totalN;
 
 		return view('livewire.pos.component', [
@@ -872,9 +872,9 @@ class PosController extends Component
 			'data3' => $data3,
 			'filteredClientes' => $filteredClientes,
 			'denominations' => Denomination::orderBy('value', 'desc')->get(),
-			'cart' => $Cart
-		])
-			->extends('layouts.theme.app')
+			'cart' => $Cart,
+			'products' => $products
+		])->extends('layouts.theme.app')
 			->section('content');
 	}
 

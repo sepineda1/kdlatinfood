@@ -123,7 +123,13 @@
 
                                         </td>
                                         <td class='text-center' colspan="2">
-                                            <select wire:model="newProducts.sku" class="form-control" id="selectSku">
+                                            {{--<input
+                                                type="text"
+                                                id="searchProduct"
+                                                class="form-control mb-2"
+                                                placeholder="🔍 Buscar producto..."
+                                            >--}}
+                                            {{--<select wire:model="newProducts.sku" class="form-control" id="selectSku">
                                                 <option value="">Seleccione SKU</option>
                                                 @foreach ($prod as $product)
                                                     @if ($product->visible == 'si')
@@ -133,7 +139,36 @@
                                                             {{ $product->product->estado }}</option>
                                                     @endif
                                                 @endforeach
-                                            </select>
+                                            </select>---}}
+
+                                              <!-- Datalist que alimenta el input -->
+
+                                              <input
+                                              type="text"
+                                              id="searchProduct"
+                                              list="productosList"
+                                              class="form-control mb-2"
+                                              placeholder="🔍 Buscar SKU o nombre..."
+                                              autocomplete="off"
+                                          >
+
+                                           {{-- Input oculto para Livewire --}}
+                                            <input
+                                            type="hidden"
+                                            id="skuInput"
+                                            wire:model.lazy="newProducts.sku"
+                                            >
+                                          
+                                            <datalist id="productosList">
+                                                <option value="">Seleccione...</option>
+                                                @foreach ($prod as $product)
+                                                    @if ($product->visible === 'si')
+                                                        <option
+                                                            value="{{ $product->barcode }} - {{ $product->product->name }} {{ $product->size->size }} {{ $product->product->estado }}"
+                                                        ></option>
+                                                    @endif
+                                                @endforeach
+                                            </datalist>
                                         </td>
                                         <td class='text-center d-none'>
                                             <input type="text" wire:model="newProducts.name"
@@ -163,6 +198,27 @@
                                         </td>
 
                                     </tr>
+                                    <script>
+                                         const search = document.getElementById('searchProduct');
+                                        const skuHidden = document.getElementById('skuInput');
+
+                                        // Cuando el usuario selecciona (o sale del input)…
+                                        search.addEventListener('change', () => {
+                                            // extraemos sólo el SKU antes de ' - '
+                                            const raw = search.value.split(' - ')[0].trim();
+                                            // asignamos al input oculto y disparamos change para Livewire
+                                            skuHidden.value = raw;
+                                            skuHidden.dispatchEvent(new Event('change'));
+                                        });
+
+                                        // opcional: si pulsas Enter en el buscador, fuerza el cambio y quita foco
+                                        search.addEventListener('keydown', e => {
+                                            if (e.key === 'Enter') {
+                                                e.preventDefault();
+                                                search.blur(); // esto lanzará 'change'
+                                            }
+                                        });
+                                    </script>
                                 @endif
                             </tbody>
 
@@ -410,6 +466,6 @@
             });
         });
     </script>
-
+   
 
 </div>

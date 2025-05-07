@@ -7,6 +7,8 @@ use App\Contracts\DeliveryTypeServiceInterface;
 use App\Services\DeliveryTypeService;
 use App\Contracts\ServicePayServiceInterface;
 use App\Services\ServicePayService;
+use App\Contracts\PaymentTypeServiceInterface;
+use App\Services\PaymentTypeService;
 class AppServiceProvider extends ServiceProvider
 {
     /**
@@ -24,6 +26,11 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(
             ServicePayServiceInterface::class,
             ServicePayService::class
+        );
+
+        $this->app->bind(
+            PaymentTypeServiceInterface::class,
+            PaymentTypeService::class
         );
     }
 

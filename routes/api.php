@@ -20,6 +20,7 @@ use App\Http\Controllers\CarritoController;
 use App\Http\Livewire\DiscountController;
 use App\Http\Controllers\DeliveryTypeController;
 use App\Http\Controllers\MantenimientoSistemaController;
+use App\Http\Controllers\CatalogoPaymentTypeController;
 
 /*
 |--------------------------------------------------------------------------
@@ -146,6 +147,8 @@ Route::post('logout', [LoginController::class, 'logoutApi']);
 //EndPoint tipos de Entregas, y lista de entregas
 Route::get('catalogo/deliverytypes', [DeliveryTypeController::class,'listCatalog']);
 Route::post('store/deliverytypes', [DeliveryTypeController::class,'storeDeliveryTypeAPI']);
+Route::get('catalogo/paymentype', [CatalogoPaymentTypeController::class,'getAll']);
+Route::get('catalogo/paymentype/{id}', [CatalogoPaymentTypeController::class,'getById']);
 
 
 /*compra*/
