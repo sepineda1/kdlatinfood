@@ -118,6 +118,7 @@ class EditSaleComponent extends Component
             $this->details = SaleDetail::where('sale_id', $this->saleId)->get();
             $this->emit('global-msg', "Producto agregado a la venta");
             $this->emit('producto-creado');
+            $this->emit('productAdded');
             $this->dispatchBrowserEvent('hideModalSaldo');
             $this->newProducts = [
                 'sku' => '',

@@ -19,6 +19,11 @@ class CatalogoPaymentType extends Model
         'deleted' => 'boolean',
     ];
 
+    public function paymentSales()
+    {
+        return $this->hasMany(PaymentSale::class, 'payment_type_id');
+    }
+
     // Aplica un filtro global para excluir los eliminados
     protected static function booted()
     {

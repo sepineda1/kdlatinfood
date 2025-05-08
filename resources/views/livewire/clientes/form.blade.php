@@ -438,7 +438,7 @@ Oyarcegroup.com retains full ownership of this software, including all intellect
 
                 @if ($selected_id < 1)
                     @if ($isBtnEnabled)
-                        <button type="button" id="btnSave" wire:click.prevent="Store()" onclick="loaderSave()"
+                        <button type="button" id="btnSave" wire:click.prevent="Store()" onclick="loader2()"
                             class="btn btn-warning mb-2 mr-2 btn-rounded close-modal">
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
                                 viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
@@ -450,7 +450,7 @@ Oyarcegroup.com retains full ownership of this software, including all intellect
                         </button>
                     @endif
                 @else
-                    <button type="button" wire:click.prevent="Update()" onclick="loader()"
+                    <button type="button" wire:click.prevent="Update()" onclick="loader2()"
                         class="btn btn-outline-primary btn-rounded mb-2 close-modal">
                         <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor"
                             stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"

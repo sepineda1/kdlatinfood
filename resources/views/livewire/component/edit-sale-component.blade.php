@@ -123,13 +123,13 @@
 
                                         </td>
                                         <td class='text-center' colspan="2">
-                                            {{--<input
+                                            {{-- <input
                                                 type="text"
                                                 id="searchProduct"
                                                 class="form-control mb-2"
                                                 placeholder="🔍 Buscar producto..."
-                                            >--}}
-                                            {{--<select wire:model="newProducts.sku" class="form-control" id="selectSku">
+                                            > --}}
+                                            {{-- <select wire:model="newProducts.sku" class="form-control" id="selectSku">
                                                 <option value="">Seleccione SKU</option>
                                                 @foreach ($prod as $product)
                                                     @if ($product->visible == 'si')
@@ -139,33 +139,30 @@
                                                             {{ $product->product->estado }}</option>
                                                     @endif
                                                 @endforeach
-                                            </select>---}}
+                                            </select>- --}}
 
-                                              <!-- Datalist que alimenta el input -->
+                                            <!-- Datalist que alimenta el input -->
 
-                                              <input
-                                              type="text"
-                                              id="searchProduct"
-                                              list="productosList"
-                                              class="form-control mb-2"
-                                              placeholder="🔍 Buscar SKU o nombre..."
-                                              autocomplete="off"
-                                          >
+                                            <div class="input-group mb-2">
+                                                <input type="text" id="searchProduct" list="productosList"
+                                                       class="form-control" placeholder="🔍 Buscar SKU o nombre..."
+                                                       autocomplete="off">
+                                                <button class="btn btn-outline-secondary" type="button" id="clearSearch" title="Borrar búsqueda">
+                                                  <i class="fas fa-paint-brush"></i>
+                                                </button>
+                                              </div>
+                                              
 
-                                           {{-- Input oculto para Livewire --}}
-                                            <input
-                                            type="hidden"
-                                            id="skuInput"
-                                            wire:model.lazy="newProducts.sku"
-                                            >
-                                          
+                                            {{-- Input oculto para Livewire --}}
+                                            <input type="hidden" id="skuInput" wire:model.lazy="newProducts.sku">
+
                                             <datalist id="productosList">
                                                 <option value="">Seleccione...</option>
                                                 @foreach ($prod as $product)
                                                     @if ($product->visible === 'si')
                                                         <option
-                                                            value="{{ $product->barcode }} - {{ $product->product->name }} {{ $product->size->size }} {{ $product->product->estado }}"
-                                                        ></option>
+                                                            value="{{ $product->barcode }} - {{ $product->product->name }} {{ $product->size->size }} {{ $product->product->estado }}">
+                                                        </option>
                                                     @endif
                                                 @endforeach
                                             </datalist>
@@ -180,17 +177,18 @@
                                         </td>
                                         <td class='text-center'>
                                             <!--<input type="number" wire:model="newProducts.items" class="form-control">-->
-                                            <input wire:model="newProducts.price" class="form-control text-center"
+                                            <input id="inputPrice" wire:model="newProducts.price" class="form-control text-center"
                                                 type="number" step="0.01" disabled />
                                         </td>
                                         <td class='text-center'>
                                             <!--<input type="number" wire:model="newProducts.items" class="form-control">-->
-                                            <input wire:model="newProducts.discount" class="form-control" type="number"
-                                                step="0.01" disabled />
+                                            <input id="inputDiscount" wire:model="newProducts.discount" class="form-control"
+                                                type="number" step="0.01" disabled />
                                         </td>
                                         <td class='text-center' colspan="2">
                                             <button type="button" wire:click.prevent="removeNewProduct"
-                                                class="btn btn-danger btn-rounded"><i class="fas fa-times"></i></button>
+                                                class="btn btn-danger btn-rounded"><i
+                                                    class="fas fa-times"></i></button>
                                             <button type="button" onclick="loader()"
                                                 wire:click.prevent="addProductRow({{ isset($saleData->id) && $saleData->cash > 0 ? true : false }})"
                                                 class="btn btn-success btn-rounded"><i
@@ -199,8 +197,9 @@
 
                                     </tr>
                                     <script>
-                                         const search = document.getElementById('searchProduct');
+                                        const search = document.getElementById('searchProduct');
                                         const skuHidden = document.getElementById('skuInput');
+                                        const clearBtn = document.getElementById('clearSearch');
 
                                         // Cuando el usuario selecciona (o sale del input)…
                                         search.addEventListener('change', () => {
@@ -217,6 +216,14 @@
                                                 e.preventDefault();
                                                 search.blur(); // esto lanzará 'change'
                                             }
+                                        });
+
+                                        // Borrador: limpia ambos campos
+                                        clearBtn.addEventListener('click', () => {
+                                            search.value = '';
+                                            skuHidden.value = '';
+                                            skuHidden.dispatchEvent(new Event('change'));
+                                            search.focus();
                                         });
                                     </script>
                                 @endif
@@ -369,6 +376,22 @@
                 });
             });
 
+            Livewire.on('sale-error', msg => {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error de Venta',
+                    text: msg,
+                    confirmButtonText: 'Cerrar',
+                    confirmButtonColor: '#d33'
+                });
+            });
+            Livewire.on('productAdded', () => {
+                document.getElementById('searchProduct').value = '';
+                document.getElementById('skuInput').value = '';
+                document.getElementById('inputPrice').value = 0;
+                document.getElementById('inputDiscount').value = 0;
+            });
+
             // ----------------------------------------------------------------
             // Preguntar cantidad a aumentar/disminuir
             // ----------------------------------------------------------------
@@ -466,6 +489,6 @@
             });
         });
     </script>
-   
+
 
 </div>

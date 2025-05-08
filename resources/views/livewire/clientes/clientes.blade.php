@@ -685,6 +685,33 @@
                                         }
                                     });
                                 }
+
+                                
+                                function loader2(id) {
+                                    Swal.fire({
+                                        title: 'Procesando Datos y Sincronizando QuickBooks',
+                                        html: 'Si este mensaje demora más de un minuto, por favor recargue la página.',
+                                        allowOutsideClick: false,
+                                        allowEscapeKey: false,
+                                        showConfirmButton: false,
+                                        onOpen: () => {
+                                            Swal.showLoading();
+
+                                            // Escuchar el evento de finalización desde Livewire
+                                            window.livewire.on('producto-creado', () => {
+                                                Swal.close();
+                                            });
+
+                                            // Establecer un temporizador para advertir si la operación demora
+                                            setTimeout(() => {
+                                                Swal.update({
+                                                    html: 'La operación está tomando más tiempo de lo esperado. Si este mensaje persiste, por favor recargue la página.'
+                                                });
+                                            }, 60000); // 60 segundos
+                                        }
+                                    });
+                                }
+                                
                                 document.addEventListener('DOMContentLoaded', function() {
 
                                     window.livewire.on('cliente-added', msg => {

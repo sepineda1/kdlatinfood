@@ -38,5 +38,21 @@ class CatalogoPaymentTypeController extends Controller
             ], 500);
         }
     }
+
+    public function addPaymentSale(int $sale_id,int $payment_type_id, float $amount){
+        $response = $this->paymentService->addPaymentSale($sale_id, $payment_type_id, $amount);
+        if($response === null){
+            return  response()->json(["data" => [], "message" => "Hubo un error al agregar." ], 500);
+        }
+        return  response()->json(["data" => $response], 200);
+    }
+
+    public function getPaymentSaleBySaleId(int $sale_id){
+        $response = $this->paymentService->getPaymentSaleBySaleId($sale_id);
+        if($response === null){
+            return  response()->json(["data" => [], "message" => "Hubo un error al agregar." ], 500);
+        }
+        return  response()->json(["data" => $response], 200);
+    }
     
 }

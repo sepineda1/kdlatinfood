@@ -64,6 +64,22 @@ class Sale extends Model
     {
         return $this->belongsTo(CatalogoPaymentType::class, 'payment_type_id', 'id');
     }
+    public function paymentSales()
+    {
+        return $this->hasMany(PaymentSale::class, 'sale_id');
+    }
+
+    public function paymentTypes()
+    {
+        return $this->belongsToMany(
+            CatalogoPaymentType::class,
+            'payment_sale',     
+            'sale_id',          
+            'payment_type_id'   
+        )
+        ->withPivot('amount') 
+        ->withTimestamps();    
+    }
 
     // MUTATORS
     /*

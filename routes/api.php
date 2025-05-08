@@ -149,7 +149,8 @@ Route::get('catalogo/deliverytypes', [DeliveryTypeController::class,'listCatalog
 Route::post('store/deliverytypes', [DeliveryTypeController::class,'storeDeliveryTypeAPI']);
 Route::get('catalogo/paymentype', [CatalogoPaymentTypeController::class,'getAll']);
 Route::get('catalogo/paymentype/{id}', [CatalogoPaymentTypeController::class,'getById']);
-
+Route::post('sale/addPaymentSale', [CatalogoPaymentTypeController::class,'addPaymentSale']);
+Route::get('sale/getPaymentSaleBySaleId/{id}', [CatalogoPaymentTypeController::class,'getPaymentSaleBySaleId']);
 
 /*compra*/
 Route::post('PosAPI/payWithCredit', [PosController::class, 'payWithCreditApi']);
