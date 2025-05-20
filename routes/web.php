@@ -26,7 +26,7 @@ use App\Http\Controllers\WebhookProductController;
 use App\Http\Controllers\VentaWoocomerce;
 use App\Http\Controllers\CustomerResetPasswordController;
 use App\Http\Controllers\ClienteWoocomerce;
-use App\Http\Controllers\QuickBooksController;
+use App\Http\Controllers\CocinaLogController;
 use App\Http\Livewire\QuickBooks;
 use Illuminate\Http\Request;
 use App\Http\Livewire\InspectorsController;
@@ -39,6 +39,7 @@ use App\Http\Livewire\SendMessageForm;
 use App\Http\Livewire\Products\Productdetalle;
 use App\Http\Livewire\SizesController;
 use App\Http\Livewire\MapsDriverController;
+use App\Http\Livewire\CocinaController;
 use App\Services\WoocomerceService;
 use App\Services\QuickBooksService;
 
@@ -157,7 +158,8 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('messages', SendMessageForm::class);
 
-
+    Route::get('cocina', CocinaController::class);
+    //Route::get('produccion/cocina/{id}', [CocinaLogController::class, 'show']);
 
     Route::get('storage/images', function () {
         $imageExtensions = ['jpg', 'jpeg', 'png', 'gif'];

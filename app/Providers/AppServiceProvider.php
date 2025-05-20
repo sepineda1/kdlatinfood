@@ -9,6 +9,8 @@ use App\Contracts\ServicePayServiceInterface;
 use App\Services\ServicePayService;
 use App\Contracts\PaymentTypeServiceInterface;
 use App\Services\PaymentTypeService;
+use App\Contracts\CocinaServiceInterface;
+use App\Services\CocinaService;
 class AppServiceProvider extends ServiceProvider
 {
     /**
@@ -31,6 +33,11 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(
             PaymentTypeServiceInterface::class,
             PaymentTypeService::class
+        );
+
+        $this->app->bind(
+            CocinaServiceInterface::class,
+            CocinaService::class
         );
     }
 

@@ -10,6 +10,7 @@ use App\Models\Sabores;
 use Illuminate\Http\Request;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Symfony\Component\HttpFoundation\Response;
+use App\Traits\Utils;
 
 class InsumosController extends Component
 {
@@ -17,6 +18,9 @@ class InsumosController extends Component
         $Fecha_Vencimiento, $SKU, $selected_id, $pageTitle, $componentName, $peso;
     public $name, $barcode;
     public $categoryid;
+
+    use Utils;
+
     public function mount()
     {
         $this->pageTitle = 'Listado';
@@ -34,26 +38,27 @@ class InsumosController extends Component
         $sabores = Sabores::with('insumos')
             ->where('nombre', $this->search)->get();
         $insumo = Insumo::all();
-        
+
 
         return view('livewire.insumos.insumos', ['sabor' => $sabor, 'sabores' => $sabores, 'insumo' => $insumo])->extends('layouts.theme.app')
             ->section('content');
     }
 
-    public function emptySupplies(){
+    public function emptySupplies()
+    {
         $this->CodigoBarras = '';
         $this->Fecha_Vencimiento = '';
         $this->User = '';
-        $this->Cantidad_Articulos = '';    
-        $this->peso = 'Onzas';   
+        $this->Cantidad_Articulos = '';
+        $this->peso = 'Onzas';
     }
+
     public function obtenerInsumo()
     {
-
         // Asegúrate de que idSabor tiene un valor válido
         if ($this->idSabor && $this->idSabor !== 'Elegir') {
             // Realiza acciones con el ID seleccionado
-            $insumoSeleccionado = Insumo::where('idSabor', $this->idSabor)->first();
+            /*$insumoSeleccionado = Insumo::where('idSabor', $this->idSabor)->first();
             $this->emptySupplies();
             if ($insumoSeleccionado) {                
                 $this->CodigoBarras = $insumoSeleccionado->CodigoBarras;
@@ -66,8 +71,11 @@ class InsumosController extends Component
                 $this->CodigoBarras = $this->generateCodigoBarras();
                 $this->Fecha_Vencimiento = $fechaV->format('Y-m-d');
                 $this->User = Auth()->user()->name;
-                
-            }
+            }*/
+            $fechaV = Carbon::now()->addMonths(1);
+            $this->CodigoBarras = $this->generateCodigoBarras();
+            $this->Fecha_Vencimiento = $fechaV->format('Y-m-d');
+            $this->User = Auth()->user()->name;
         }
     }
 
@@ -76,12 +84,17 @@ class InsumosController extends Component
         $this->emit('show-modal', 'details loaded');
     }
 
-    public function generateCodigoBarras(){
-        $barcodeNumber = "770" . str_pad(mt_rand(0, 99999), 6, '0', STR_PAD_LEFT);
+    //CODIGO DEL PAIS + CODIGO DE LA EMPRESA + CODIGO JILIANO
+    //2024140 ()
+
+    public function generateCodigoBarras()
+    {
+        /*$barcodeNumber = "770" . str_pad(mt_rand(0, 99999), 6, '0', STR_PAD_LEFT);
         $num = $barcodeNumber;
         $parte_num = substr($num, 3);
-        $nuevo = "770" . str_pad($parte_num + 1, strlen($parte_num), "0", STR_PAD_LEFT);
-        return $nuevo;
+        $nuevo = "770" . str_pad($parte_num + 1, strlen($parte_num), "0", STR_PAD_LEFT);*/
+
+        return $this->getCodigoBarras();
     }
 
 
@@ -99,7 +112,7 @@ class InsumosController extends Component
         try {
             $rules = [
                 'Fecha_Vencimiento' => 'required|date',
-                'Cantidad_Articulos'=> 'required',
+                'Cantidad_Articulos' => 'required',
                 'CodigoBarras'      => 'required',
                 'idSabor'           => 'required',
                 'peso'           => 'required|in:Onzas,Libras,Kilogramos'
@@ -107,7 +120,7 @@ class InsumosController extends Component
             $messages = [
                 'Fecha_Vencimiento.required' => 'La fecha de vencimiento es obligatoria',
                 'Fecha_Vencimiento.date'     => 'La fecha de vencimiento debe ser una fecha válida',
-                'Cantidad_Articulos.required'=> 'La cantidad de artículos es obligatoria',
+                'Cantidad_Articulos.required' => 'La cantidad de artículos es obligatoria',
                 'CodigoBarras.required'      => 'El código de barras es obligatorio',
                 'idSabor.required'           => 'El sabor es obligatorio',
                 'peso.required'           => 'La unidad de Peso es Requerido',
@@ -138,15 +151,14 @@ class InsumosController extends Component
             $this->updateSaborStock($this->idSabor, $amount);
             $this->emptySupplies();
             $this->render();
-        
+
             $this->emit('producto-creado');
             $this->emit('lote-added', 'Lote Agregado');
             $this->emit('global-msg', 'Lote de insumo CREADO');
-
         } catch (\Exception $e) {
             //throw $th;
             $this->emit('sale-error',  $e->getMessage());
-		    throw $e;
+            throw $e;
         }
     }
     public function updateSaborStock($productId, $addedStock)
@@ -162,7 +174,7 @@ class InsumosController extends Component
         $this->emit('producto-creado');
         $this->Cantidad_Articulos = 0;
         $this->idSabor = 'Elegir';
-        $this->emptySupplies();       
+        $this->emptySupplies();
     }
 
     //api
@@ -187,10 +199,11 @@ class InsumosController extends Component
                 'Cantidad_Articulos' => 'required'
             ]);
 
-            $barcodeNumber = "770" . str_pad(mt_rand(0, 99999), 6, '0', STR_PAD_LEFT);
+            /*$barcodeNumber = "770" . str_pad(mt_rand(0, 99999), 6, '0', STR_PAD_LEFT);
             $num = $barcodeNumber;
             $parte_num = substr($num, 3);
-            $nuevo = "770" . str_pad($parte_num + 1, strlen($parte_num), "0", STR_PAD_LEFT);
+            $nuevo = "770" . str_pad($parte_num + 1, strlen($parte_num), "0", STR_PAD_LEFT);*/
+            $nuevo = $this->getCodigoBarras();
 
             $insumo = Insumo::create([
                 'Fecha_Vencimiento' => Carbon::now()->addMonths(1),
@@ -206,6 +219,7 @@ class InsumosController extends Component
                 'message' => 'Insumo created successfully',
                 'data' => $insumo,
             ], Response::HTTP_CREATED);
+            
         } catch (ValidationException $e) {
             return response()->json([
                 'message' => 'Validation error',

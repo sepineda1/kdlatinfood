@@ -36,7 +36,7 @@ class SaboresController extends Component
             'sabores.nombre')
                ->join('products', 'products.sabor_id', '=', 'sabores.id')
                ->join('sale_details', 'sale_details.presentaciones_id', '=', 'products.id')
-               ->groupBy('sabores.id')
+               ->groupBy('sabores.id','sabores.nombre')
    
                ->first();
         //$data=Sabores::all();
