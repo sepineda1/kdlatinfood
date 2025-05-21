@@ -337,7 +337,7 @@
                                 <td >
                                      ${button}  
                                 </td>
-                                <td class="text-center"><span class="badge badge-success"><i class="fas fa-barcode" style="font-size:35px;"></i> ${item.codigoBarras != null ? item.codigoBarras : ""}</span></td>
+                                <td class="text-center"><span class="badge badge-success"  style="font-size:35px;"><i class="fas fa-barcode"></i> ${item.codigoBarras != null ? item.codigoBarras : ""}</span></td>
                             </tr>`;
                                     tbody.insertAdjacentHTML('beforeend', row);
                                 });
