@@ -185,6 +185,7 @@ class EnviosController extends Component
                             'presentacion' => $details->product->product->name . " " . $details->product->size->size . " " . $details->product->product->estado,
                             'qty' => $details->quantity,
                             'scanned' => $details->scanned,
+                            'codigoBarras' => $details->lot->CodigoBarras,
                         ];
                         $detailsArray[] = $detailObject;
                     }

@@ -337,6 +337,7 @@
                                 <td >
                                      ${button}  
                                 </td>
+                                <td class="text-center">${item.codigoBarras != null ? item.codigoBarras : ""}</td>
                             </tr>`;
                                     tbody.insertAdjacentHTML('beforeend', row);
                                 });
