@@ -28,6 +28,7 @@ aria-labelledby="saleDetailsLabel" aria-hidden="true">
                             <th class="text-white">Presentación</th>
                             <th class="text-white">Cantidad</th>
                             <th class="text-white">Scan</th>
+                            <th class="text-white">Codigo de Barras</th>
                         </tr>
                     </thead>
                     <tbody id="saleDetailsTableBody">
