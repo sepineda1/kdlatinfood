@@ -294,7 +294,7 @@
                         document.getElementById('orderNumber').innerText = '';
                         document.getElementById('loadingSpinner').style.display = 'block';
                         document.getElementById('saleDetailsContent').style.display = 'none';
-                        fetch('/intranet/public/sale/details/' + saleID, {
+                        fetch('sale/details/' + saleID, {
                                 method: 'GET',
                                 headers: {
                                     'X-CSRF-TOKEN': '{{ csrf_token() }}',
