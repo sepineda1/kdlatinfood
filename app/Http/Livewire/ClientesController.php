@@ -1358,7 +1358,9 @@ class ClientesController extends Component
                     $query->orderBy('created_at', 'desc'); // Ordenar por estado en orden descendente (PENDING primero)
                 },
                 'sale.salesDetails.product.product',
-                'sale.salesDetails.lot',
+                'sale.salesDetails.lot' => function ($query){
+                    $query->select('id','CodigoBarras');
+                },
                 'sale.deliveriesTypes.catalogEntry'
             ])->find($id);
 
