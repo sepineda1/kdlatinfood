@@ -13,6 +13,12 @@
             'chill_80_55' => '80→55°F',
             'chill_le40' => '≤40°F',
         ];
+        $LogSeccion = [
+            '1B' => 'Sección de Cocción',
+            '1B-1' => 'Sección de Cocción',
+            '2B' => 'Sección de Enfriamiento',
+            '2B-1' => 'Sección de Enfriamiento',
+        ];
     @endphp
     <style>
         table {
@@ -59,140 +65,7 @@
             <h2><i class="fas fa-drumstick-bite"></i> Cocina</h2>
         </div>
         <div class="card-body">
-            <div class="card mb-4 mt-4">
-                <div class="card-header text-white" style="background: #FF5100"><i class="fas fa-industry"></i> Planta de
-                    Procesamientos de Lotes de Alimentos</div>
-                <div class="card-body">
-                    <p>Selecione el Lote para conocer el historial del tratamiento dado en la planta:</p>
-                    <select wire:model="selected_insumo_id" class="form-control form-select mb-3">
-                        <option value="">-- Seleccionar Insumo --</option>
-                        @foreach ($insumos as $ins)
-                            <option value="{{ $ins->id }}">{{ $ins->CodigoBarras }} - {{ $ins->sabor->nombre }} -
-                                {{ $ins->convertirPeso('Onzas', $ins->Cantidad_Articulos) }} Onzas</option>
-                        @endforeach
-                    </select>
-
-                    @if (count($logs) > 0)
-                        @php $k = 0; @endphp
-                        @foreach ($logs as $log)
-                            @php $k++; @endphp
-                            <div class="card mb-3">
-                                <div class="card-header">
-                                    <img src="{{ asset('assets/img/cocinero.png') }}" width="50" alt="">
-                                    <b>Tratamiento #{{ $k }} -
-                                        {{ \Carbon\Carbon::parse($log['fecha'])->format('m-d-Y') }}</b>
-                                    <h4><b>{{ $log['insumo']['sabor']['nombre'] }} (CCP:
-                                            {{ $log['ccp_code'] }})</b></h4>
-                                </div>
-                                <div class="card-body">
-
-                                    <p><strong>Producto:</strong> <b>{{ $log['insumo']['CodigoBarras'] }} -
-                                            {{ $log['insumo']['sabor']['nombre'] }} -
-
-                                            <span
-                                                class="badge badge-success">{{ \Carbon\Carbon::parse($log['insumo']['created_at'])->format('m-d-Y') }}
-                                                (Fecha Creación)
-                                                -
-                                                {{ \Carbon\Carbon::parse($log['insumo']['Fecha_Vencimiento'])->format('m-d-Y') }}
-                                                (Fecha de Vencimiento) </span>
-                                        </b></p>
-                                    <p><strong>Observaciones:</strong> {{ $log['observaciones'] }}</p>
-
-
-                                    <!-- Mediciones -->
-                                    <table class="table mb-2 table-bordered" style="border-radius: 15px !important">
-                                        <thead>
-                                            <tr>
-                                                <th><i class="fas fa-sticky-note"></i> Fecha</th>
-                                                <th><i class="fas fa-sticky-note"></i> Fase</th>
-                                                <th><i class="far fa-clock"></i> Hora</th>
-                                                <th><i class="fas fa-temperature-low"></i> Temp (°F)</th>
-                                                <th><i class="fas fa-user"></i> Usuario</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            @foreach ($log['mediciones'] as $med)
-                                                <tr>
-                                                    <td>{{ \Carbon\Carbon::parse($med['created_at'])->format('m-d-Y') }}</td>
-                                                    <td>{{ $labels[$med['fase']] ?? $med['fase'] }}</td>
-                                                    <td>{{ $med['hora'] }}</td>
-                                                    <td>{{ $med['temperatura'] }}</td>
-                                                    <td>{{ $med['user']['name'] }}</td>
-                                                </tr>
-                                            @endforeach
-                                        </tbody>
-                                    </table>
-                                    <div class="text-right">
-                                        <button
-                                            wire:click.prevent="$emitTo(
-                                                                'verificacion-log',
-                                                                'open',
-                                                                {{ $log['id'] }},
-                                                                'approve'
-                                                            )"
-                                            class="btn btn-rounded ">Acceptable  <img
-                                                src="{{ asset('assets/img/comprobado.png') }}" width="25"
-                                                alt=""></button>
-                                        <button
-                                            wire:click.prevent="$emitTo(
-                                                                'verificacion-log',
-                                                                'open',
-                                                                {{ $log['id'] }},
-                                                                'deny'
-                                                            )"
-                                            class="btn btn-rounded ">Deficiency <img src="{{ asset('assets/img/cerrar.png') }}"
-                                                width="25" alt=""></button>
-                                    </div>
-                                    <table class="table  table-bordered">
-                                        <thead>
-                                            <tr>
-                                                   <th><i class="fas fa-sticky-note"></i> Fecha</th>
-                                                <th><i class="fas fa-sticky-note"></i> Fase</th>
-                                                <th><i class="fas fa-check"></i> Estado</th>
-                                                <th><i class="fas fa-check-double"></i> Hora Verif.</th>
-                                                <th><i class="far fa-clock"></i> Hora Revisión</th>
-                                                <th><i class="fas fa-user"></i> Verificador</th>
-                                                 <th><i class="fas fa-user"></i> Revisor</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            @if (!empty($log['verificacion']) && count($log['verificacion']) > 0)
-                                                @foreach ($log['verificacion'] ?? [] as $ver)
-                                                    <tr>
-                                                        <td>{{ \Carbon\Carbon::parse($ver['created_at'])->format('m-d-Y') }}</td>
-                                                        <td>{{ $log['ccp_code'] }}</td>
-                                                        <td>
-                                                            @if ($ver['estado'] == 'approve')
-                                                                <img
-                                                                    src="{{ asset('assets/img/comprobado.png') }}" width="20"
-                                                                    alt=""> Acceptable
-                                                            @else
-                                                                <img
-                                                                    src="{{ asset('assets/img/cerrar.png') }}" width="20"
-                                                                    alt=""> Deficiency
-                                                            @endif
-                                                        </td>
-                                                        <td>{{ $ver['hora_verificacion'] }}</td>
-                                                        <td>{{ $ver['hora_revision_registros'] }}</td>
-                                                        <td>{{ $ver['verificador']['name'] }}</td>
-                                                        <td>{{ $ver['revisor']['name'] }}</td>
-                                                    </tr>
-                                                @endforeach
-                                            @else
-                                                <tr>
-                                                    <td colspan="5" class="text-center"> <span
-                                                            class="badge badge-danger"> Aun no se ha verificado por el
-                                                            jefe de Operaciones.</span></td>
-                                                </tr>
-                                            @endif
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        @endforeach
-                    @endif
-                </div>
-            </div>
+            
             @if ($step == 1)
                 <div class="card mb-3">
                     <div class="card-header text-white" style="background: #FF5100"><b>Formulario de Tratamiento de
@@ -292,6 +165,167 @@
                         organizado.</p>
                 </div>
             @endif
+
+            <div class="card mb-4 mt-4">
+                <div class="card-header text-white" style="background: #FF5100"><i class="fas fa-industry"></i> Planta
+                    de
+                    Procesamientos de Lotes de Alimentos</div>
+                <div class="card-body">
+                    <p>Selecione el Lote para conocer el historial del tratamiento dado en la planta:</p>
+                    <select wire:model="selected_insumo_id" class="form-control form-select mb-3">
+                        <option value="">-- Seleccionar Insumo --</option>
+                        @foreach ($insumos as $ins)
+                            <option value="{{ $ins->id }}">{{ $ins->CodigoBarras }} - {{ $ins->sabor->nombre }}
+                                -
+                                {{ $ins->convertirPeso('Onzas', $ins->Cantidad_Articulos) }} Onzas</option>
+                        @endforeach
+                    </select>
+
+                    @if (count($logs) > 0)
+                        @php $k = 0; @endphp
+                        @foreach ($logs as $log)
+                            @php $k++; @endphp
+                            <div class="card mb-3">
+                                <div class="card-header">
+                                    <img src="{{ asset('assets/img/cocinero.png') }}" width="50" alt="">
+                                    <b>Tratamiento #{{ $k }} -
+                                        {{ \Carbon\Carbon::parse($log['fecha'])->format('m-d-Y') }}</b>
+                                    <h4><b>{{ $log['insumo']['sabor']['nombre'] }} (CCP:
+                                            {{ $log['ccp_code'] }})</b></h4>
+                                </div>
+                                <div class="card-body">
+
+                                    <p><strong>Producto:</strong> <b>{{ $log['insumo']['CodigoBarras'] }} -
+                                            {{ $log['insumo']['sabor']['nombre'] }} -
+
+                                            <span
+                                                class="badge badge-success">{{ \Carbon\Carbon::parse($log['insumo']['created_at'])->format('m-d-Y') }}
+                                                (Fecha Creación)
+                                                -
+                                                {{ \Carbon\Carbon::parse($log['insumo']['Fecha_Vencimiento'])->format('m-d-Y') }}
+                                                (Fecha de Vencimiento) </span>
+                                        </b></p>
+                                    <p><strong>Observaciones:</strong> {{ $log['observaciones'] }}</p>
+
+                                    <div style="border:1px solid #f0f0f0;background-color:#f5f5f5 !important;border-radius: 10px !important"
+                                        class="p-3">
+                                        <h5><b><i class="fas fa-temperature-high"></i> Procedimientos</b></h5>
+                                        <!-- Mediciones -->
+                                        <table class="table mb-2 table-bordered" style="border-radius: 15px !important">
+                                            <thead>
+                                                <tr>
+                                                    <th><i class="fas fa-sticky-note"></i> Fecha</th>
+                                                    <th><i class="fas fa-sticky-note"></i> Fase</th>
+                                                    <th><i class="fas fa-sticky-note"></i> Etapa</th>
+                                                    <th><i class="far fa-clock"></i> Hora</th>
+                                                    <th><i class="fas fa-temperature-low"></i> Temp (°F)</th>
+                                                    <th><i class="fas fa-user"></i> Usuario</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody class="bg-white">
+                                                @foreach ($log['mediciones'] as $med)
+                                                    <tr>
+                                                        <td>{{ \Carbon\Carbon::parse($med['created_at'])->format('m-d-Y') }}
+                                                        </td>
+                                                        <td>{{ $labels[$med['fase']] ?? $med['fase'] }}</td>
+                                                        <td>
+                                                            @if ($med['fase'] === 'cook_min')
+                                                                <span class="badge badge-danger"><i
+                                                                        class="fas fa-fire"></i>
+                                                                    Cocción</span>
+                                                            @else
+                                                                <span class="badge badge-primary"><i
+                                                                        class="fas fa-temperature-low"></i>
+                                                                    Enfriamiento</span>
+                                                            @endif
+                                                        </td>
+
+                                                        <td>{{ $med['hora'] }}</td>
+                                                        <td>{{ $med['temperatura'] }}</td>
+                                                        <td>{{ $med['user']['name'] }}</td>
+                                                    </tr>
+                                                @endforeach
+                                            </tbody>
+                                        </table>
+                                    </div>
+
+                                    <div style="border:1px solid #f0f0f0;background-color:#f5f5f5 !important;border-radius: 10px !important"
+                                        class="p-3 mt-4">
+                                        <h5><b><i class="fas fa-check-double"></i> Verificaciones</b></h5>
+                                        <div>
+                                            <button
+                                                wire:click.prevent="$emitTo(
+                                                                'verificacion-log',
+                                                                'open',
+                                                                {{ $log['id'] }},
+                                                                'approve'
+                                                            )"
+                                                class="btn btn-rounded ">Add Veficación <img
+                                                    src="{{ asset('assets/img/comprobado.png') }}" width="25"
+                                                    alt=""></button>
+                                            <button
+                                                wire:click.prevent="$emitTo(
+                                                                'verificacion-log',
+                                                                'open',
+                                                                {{ $log['id'] }},
+                                                                'deny'
+                                                            )"
+                                                class="btn btn-rounded ">Add Deficiency <img
+                                                    src="{{ asset('assets/img/cerrar.png') }}" width="25"
+                                                    alt=""></button>
+                                        </div>
+                                        <table class="table  table-bordered">
+                                            <thead>
+                                                <tr>
+                                                    <th><i class="fas fa-sticky-note"></i> Fecha</th>
+                                                    <th><i class="fas fa-sticky-note"></i> Fase</th>
+                                                    <th><i class="fas fa-check"></i> Estado</th>
+                                                    <th><i class="fas fa-check-double"></i> Hora Verif.</th>
+                                                    <th><i class="far fa-clock"></i> Hora Revisión</th>
+                                                    <th><i class="fas fa-user"></i> Verificador</th>
+                                                    <th><i class="fas fa-user"></i> Revisor</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody class="bg-white">
+                                                @if (!empty($log['verificacion']) && count($log['verificacion']) > 0)
+                                                    @foreach ($log['verificacion'] ?? [] as $ver)
+                                                        <tr>
+                                                            <td>{{ \Carbon\Carbon::parse($ver['created_at'])->format('m-d-Y') }}
+                                                            </td>
+                                                            <td>{{ $log['ccp_code'] }}</td>
+                                                            <td>
+                                                                @if ($ver['estado'] == 'approve')
+                                                                    <img src="{{ asset('assets/img/comprobado.png') }}"
+                                                                        width="20" alt=""> Acceptable
+                                                                @else
+                                                                    <img src="{{ asset('assets/img/cerrar.png') }}"
+                                                                        width="20" alt=""> Deficiency
+                                                                @endif
+                                                            </td>
+                                                            <td>{{ $ver['hora_verificacion'] }}</td>
+                                                            <td>{{ $ver['hora_revision_registros'] }}</td>
+                                                            <td>{{ $ver['verificador']['name'] }}</td>
+                                                            <td>{{ $ver['revisor']['name'] }}</td>
+                                                        </tr>
+                                                    @endforeach
+                                                @else
+                                                    <tr>
+                                                        <td colspan="7" class="text-center"> <span
+                                                                class="badge badge-danger"> Aun no se ha verificado por
+                                                                el
+                                                                jefe de Operaciones.</span></td>
+                                                    </tr>
+                                                @endif
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        @endforeach
+                    @endif
+                </div>
+            </div>
+
             {{-- @if ($step == 3)
                 <div class="card">
                     <div class="card-header bg-success text-white">Verificación</div>

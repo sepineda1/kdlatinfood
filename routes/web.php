@@ -158,7 +158,8 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('messages', SendMessageForm::class);
 
-    Route::get('cocina', CocinaController::class);
+    Route::get('cocina/log', CocinaController::class);
+    Route::get('cocina/form', CocinaController::class);
     //Route::get('produccion/cocina/{id}', [CocinaLogController::class, 'show']);
 
     Route::get('storage/images', function () {
