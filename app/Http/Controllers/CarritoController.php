@@ -84,8 +84,7 @@ class CarritoController extends Controller
             ->where('id_cliente', $id_cliente)
             ->whereHas('cliente.ServicePay', function ($query) {
                 $query->where('state', 1)
-                    ->where('deleted', 0); 
-                    
+                    ->where('deleted', 0);  
             })
             ->get();
 
