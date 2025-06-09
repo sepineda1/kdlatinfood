@@ -46,7 +46,12 @@ trait SaleTrait{
             if ($ModelSale->customer->saldo <= 0) {
                 return $this->responses('El cliente NO tiene saldo Disponible.', 404, $responseJSON, 'sale-error');
             }
-
+            $LoteForPresentacion = Lotes::where('SKU', $ModelPresentacion->id)
+                ->where('Fecha_Vencimiento', '>=', now()) // Solo considera fechas futuras o actuales
+                ->orderBy('Fecha_Vencimiento', 'asc')->first();
+                if ($LoteForPresentacion == null) {
+                    return $this->responses('No existe lote para este producto.', 404, $responseJSON, 'sale-error');
+                }
           
             $isUpdate = false;
             $Discount = 0;
@@ -122,9 +127,6 @@ trait SaleTrait{
 
                 if($ModelSale->status_envio === "ACTUAL"){
                     //Simular escaneo
-                    $LoteForPresentacion = Lotes::where('SKU', $ModelPresentacion->id)
-                    ->where('Fecha_Vencimiento', '>=', now()) // Solo considera fechas futuras o actuales
-                    ->orderBy('Fecha_Vencimiento', 'asc')->first();
                     $newSaleDetail->lot_id = $LoteForPresentacion->id;
                     $newSaleDetail->scanned = true;
                     $newSaleDetail->save();
