@@ -125,6 +125,9 @@ trait SaleTrait{
                     $LoteForPresentacion = Lotes::where('SKU', $ModelPresentacion->id)
                     ->where('Fecha_Vencimiento', '>=', now()) // Solo considera fechas futuras o actuales
                     ->orderBy('Fecha_Vencimiento', 'asc')->first();
+                    if ($LoteForPresentacion == null) {
+                        return $this->responses('No existe lote para este producto.', 404, $responseJSON, 'sale-error');
+                    }
                     $newSaleDetail->lot_id = $LoteForPresentacion->id;
                     $newSaleDetail->scanned = true;
                     $newSaleDetail->save();

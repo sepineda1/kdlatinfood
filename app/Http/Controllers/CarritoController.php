@@ -82,6 +82,8 @@ class CarritoController extends Controller
         // Cargar el carrito con las relaciones de presentación y producto
         $carrito = Carrito::with(['producto.product', 'cliente.ServicePay.catalogoService'])
             ->where('id_cliente', $id_cliente)
+            ->where('state', 1)
+            ->where('delete', 0)
             ->get();
 
         if ($carrito->isEmpty()) {
