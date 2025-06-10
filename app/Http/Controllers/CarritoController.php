@@ -80,13 +80,15 @@ class CarritoController extends Controller
     public function getCartByCustomer($id_cliente)
     {
         // Cargar el carrito con las relaciones de presentación y producto
-        $carrito = Carrito::with(['producto.product', 'cliente.ServicePay.catalogoService'])
+        $carrito = 
+            Carrito::with(['producto.product',
+                    'cliente.ServicePay' => function ($query) {
+                        $query->where('state', 1)
+                            ->where('deleted', 0);
+                    },
+                    'cliente.ServicePay.catalogoService'
+            ])
             ->where('id_cliente', $id_cliente)
-            ->whereHas('cliente.ServicePay', function ($query) {
-                $query->where('state', 1)
-                    ->where('deleted', 0); 
-                    
-            })
             ->get();
 
         if ($carrito->isEmpty()) {
