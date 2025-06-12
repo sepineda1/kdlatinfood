@@ -15,6 +15,8 @@ class PaymentSale extends Model
         'sale_id',
         'payment_type_id',
         'amount',
+        'id_user',
+        'cash'
     ];
 
     public function sale()
@@ -26,4 +28,9 @@ class PaymentSale extends Model
     {
         return $this->belongsTo(CatalogoPaymentType::class);
     }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }    
 }

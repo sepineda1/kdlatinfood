@@ -65,6 +65,7 @@ Route::put('/sales/cargar/{id}', [DespachosController::class, 'cargarSale']);
 Route::put('/sales/FIN/{id}', [EnviosController::class, 'updateFinApi']);
 Route::get('/sales/detalle/pendiente/{id}', [DespachosController::class, 'getSaleDetailsPendiente']); 
 Route::put('/decrementProductSale/{quantity}/{saleDetailId}/{userID}', [DespachosController::class, 'decrementQuantityToSale']);
+Route::put('/sale/paymentSaleRegistrer', [EnviosController::class,'paymentSaleRegistrer']);
 
 /* PRODUCTOS*/
 Route::get('products', [ProductsController::class, 'ShowAll']);
@@ -150,7 +151,7 @@ Route::post('store/deliverytypes', [DeliveryTypeController::class,'storeDelivery
 Route::get('catalogo/paymentype', [CatalogoPaymentTypeController::class,'getAll']);
 Route::get('catalogo/paymentype/{id}', [CatalogoPaymentTypeController::class,'getById']);
 Route::post('sale/addPaymentSale', [CatalogoPaymentTypeController::class,'addPaymentSale']);
-Route::get('sale/getPaymentSaleBySaleId/{id}', [CatalogoPaymentTypeController::class,'getPaymentSaleBySaleId']);
+Route::post('sale/addPaymentSale', [CatalogoPaymentTypeController::class,'addPaymentSale']);
 
 /*compra*/
 Route::post('PosAPI/payWithCredit', [PosController::class, 'payWithCreditApi']);

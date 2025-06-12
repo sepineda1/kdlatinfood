@@ -28,7 +28,8 @@ class Sale extends Model
         'fecha_carga',
         'fecha_escaneo',
         'fecha_firma',
-        'total_with_services'
+        'total_with_services',
+        'payment_type_id'
     ];
 
     public function customer()

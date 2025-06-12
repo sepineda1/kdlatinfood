@@ -19,6 +19,7 @@ use App\Models\Customer;
 use App\Models\Operario;
 use Illuminate\Http\Request;
 use App\Models\Inspectors;
+use App\Models\PaymentSale;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -692,4 +693,35 @@ class EnviosController extends Component
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
+
+    public function paymentSaleRegistrer(Request $request)
+    {
+        try {
+            // Validar los datos de la solicitud
+            $request->validate([
+                'payment_sale_id' => 'required|exists:payment_sale,id',
+                'id_user' => 'required|exists:users,id',
+                'cash' => 'required|numeric|gt:0',
+            ]);            
+            $paymentSale = PaymentSale::find($request->payment_sale_id);        
+            if (!$paymentSale) {
+                return response()->json(['message' => 'No existe el registro de Pago'], 404);
+            }
+
+            if ($request->cash < $paymentSale->amount) {
+                return response()->json([
+                    'message' => "El valor recibido debe ser mayor o igual a {$paymentSale->amount}"
+                ], 404);
+            }
+
+            $paymentSale->id_user = $request->id_user;
+            $paymentSale->cash = $request->cash;
+            $paymentSale->save();
+            return response()->json(['message' => 'Cantidad actualizada con éxito']);
+
+        } catch (\Exception $e) {
+            // Manejo de errores en caso de excepción
+            return response()->json(['message' => 'Error al actualizar la cantidad', 'error' => $e->getMessage()], 500);
+        }
+    }    
 }

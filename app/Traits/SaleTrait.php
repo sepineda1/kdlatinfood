@@ -161,6 +161,14 @@ trait SaleTrait{
             }
             if($userID != null){
                 try{
+                    $paymentSale = PaymentSale::where('sale_id', $ModelSale->id)
+                                            ->where('payment_type_id', $ModelSale->payment_type_id)
+                                            ->first();;
+                    if(!$paymentSale){
+                        return $this->responses('La orden no tiene tipo de pago', 404, $responseJSON, 'sale-error');
+                    }
+                    $paymentSale->amount += $price * $quantity;
+                    $paymentSale->save();
                     $user = User::find($userID);
                     $accion = sprintf(
                         'Se agregó %d unid. (sin escanear) del producto #%d %s a la orden #%d (estado: %s)',
@@ -297,16 +305,16 @@ trait SaleTrait{
                 //eliminar de la venta
                 $Sale1 = Sale::find($SaleID);
                 $status = $Sale1->status_envio;
+                $this->decrementInPaymentSale($Sale1, true);
                 $Sale1 ->delete();
                 $SaleDeleted = true;
                 $QUICK = new QuickBooksService();
-                $QUICK->deleteInvoice($SaleID);
-
+                $QUICK->deleteInvoice($SaleID);                
                 if(!$responseJSON){
                     $this->emit('hideModalEdit');
                 }
                 if($userID != null){
-                    try{
+                    try{                        
                         $user = User::find($userID);
                         Inspectors::create([
                             'user' => $user->name,
@@ -319,6 +327,7 @@ trait SaleTrait{
                 }  
 
             }else{
+                $this->decrementInPaymentSale($Sale, false);
                 $QUICK = new QuickBooksService();
                 $QUICK->updateInvoice($SaleID);
             }
@@ -333,7 +342,7 @@ trait SaleTrait{
                 //Agregando al cupo del cliente
                 $customer = Customer::find($Sale->customer->id);
                 $customer->saldo += $cashSobrante; 
-                $customer->save();
+                $customer->save();             
             }
             DB::commit();
             if(!$responseJSON){
@@ -371,5 +380,26 @@ trait SaleTrait{
             $this->emit($nameEmit, $content);
             return;
         }
-    }
+    } 
+    
+    public function decrementInPaymentSale(Sale $Sale, $deletePaymentSale)
+    {
+        try {
+
+            if ($deletePaymentSale) {
+                PaymentSale::where('sale_id', $Sale->id)->delete();
+                return;
+            }
+            $paymentSale = PaymentSale::where('sale_id', $Sale->id)
+                                        ->where('payment_type_id', $Sale->payment_type_id)
+                                        ->first();;
+            if(!$paymentSale){
+                throw 'La orden no tiene tipo de pago';
+            }
+            $paymentSale->amount -= $price * $quantity;
+            $paymentSale->save();  
+        } catch (Exception $e) {
+            return $this->responses('Hubo un error: ' . $e->getMessage(), 500, $responseJSON, 'sale-error');
+        }
+    }       
 }

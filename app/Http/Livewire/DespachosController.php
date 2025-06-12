@@ -166,7 +166,7 @@ class DespachosController extends Component
             // Obtén los detalles de la venta con el ID proporcionado, incluyendo producto y size 
             // Enviar habilitado y no eliminados
             // Que venga dentro de la orden
-            $sale = Sale::with(['salesDetails.product.product', 'salesDetails.product.size', 'customer', 'salesDetails.lot','services.servicePay.catalogoService','deliveriesTypes.catalogEntry'])
+            $sale = Sale::with(['salesDetails.product.product', 'salesDetails.product.size', 'customer', 'salesDetails.lot','services.servicePay.catalogoService','deliveriesTypes.catalogEntry', 'paymentSales.paymentType','payment_type'])
                 ->where('id', $id)
                 ->first();
 
@@ -1474,6 +1474,7 @@ class DespachosController extends Component
 
         $sale->items -= $quantity;
         $sale->save();
+        $this->decrementInPaymentSale($sale, false);     
 
         $product = Presentacion::find($presentacion_id);
         $product->stock_box += $quantity; //Cantidad de Cajas que hay en el inventario
@@ -1483,7 +1484,7 @@ class DespachosController extends Component
         $QUICK->updateInvoice($saleID);
 
         if($userID != null){
-            try{
+            try{            
                 $user = User::find($userID);
                 Inspectors::create([
                     'user' => $user->name,
@@ -1520,11 +1521,11 @@ class DespachosController extends Component
 
             $sale = Sale::find($saleId);
             if ($sale) {
+                $this->decrementInPaymentSale($sale, true);
                 $sale->delete();
                 $QUICK = new QuickBooksService();
                 $QUICK->deleteInvoice($saleId);
-            }
-
+            }        
             DB::commit();
             if($userID != null){
                 try{

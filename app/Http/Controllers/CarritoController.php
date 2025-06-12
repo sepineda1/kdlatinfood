@@ -12,6 +12,7 @@ use Illuminate\Http\Request;
 use App\Models\Carrito;
 use App\Contracts\DeliveryTypeServiceInterface;
 use App\Contracts\ServicePayServiceInterface;
+use App\Contracts\PaymentTypeServiceInterface;
 use Carbon\Carbon;
 use Log;
 
@@ -19,11 +20,13 @@ class CarritoController extends Controller
 {
     protected $deliveryService;
     protected $servicePay;
+    protected $servicePaymentType;
 
-    public function __construct(DeliveryTypeServiceInterface $deliveryService, ServicePayServiceInterface $servicePay)
+    public function __construct(DeliveryTypeServiceInterface $deliveryService, ServicePayServiceInterface $servicePay, PaymentTypeServiceInterface $servicePaymentType)
     {
         $this->deliveryService = $deliveryService;
         $this->servicePay = $servicePay;
+        $this->servicePaymentType = $servicePaymentType;
     }
     /**
      * Agregar un producto al carrito.
@@ -411,7 +414,8 @@ class CarritoController extends Controller
             $request->validate([
                 'cliente_id' => 'required|exists:customers,id',
                 'delivery_type' => 'required|exists:catalogo_delivery_type,id',
-                'date' => 'required|int'
+                'date' => 'required|int',
+                'id_payment_type' => 'required|int'
             ]);
 
             $fecha = Carbon::createFromTimestampMs((int) $request->date)
@@ -468,15 +472,17 @@ class CarritoController extends Controller
                 }
                 return $sum + ($item->producto->price * $item->items);
             }, 0);
+            // Si es pago en credito
+            if($request->id_payment_type == 1){
+                // Verificar si el cliente tiene saldo suficiente
+                if ($cliente->saldo < $total) {
+                    return response()->json(['success' => false, 'message' => 'Saldo insuficiente para realizar la compra'], 400);
+                }
 
-            // Verificar si el cliente tiene saldo suficiente
-            if ($cliente->saldo < $total) {
-                return response()->json(['success' => false, 'message' => 'Saldo insuficiente para realizar la compra'], 400);
-            }
-
-            // Restar el saldo del cliente
-            $cliente->saldo -= $total + $montoService;
-            $cliente->save();
+                // Restar el saldo del cliente
+                $cliente->saldo -= $total + $montoService;
+                $cliente->save();
+            }            
 
             // Registrar la venta
             $sale = Sale::create([
@@ -484,8 +490,11 @@ class CarritoController extends Controller
                 'items' => $carrito->sum('items'),
                 'user_id' => 11,
                 'CustomerID' => $cliente->id,
-                'total_with_services' => $total + $montoService
+                'total_with_services' => $total + $montoService,
+                'payment_type_id' => $request->id_payment_type
             ]);
+
+            $this->servicePaymentType->addPaymentSale($sale->id, $request->id_payment_type, $total);
 
             // Registrar los detalles de la venta
             foreach ($carrito as $item) {
