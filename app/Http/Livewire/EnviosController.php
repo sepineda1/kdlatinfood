@@ -23,6 +23,7 @@ use App\Models\PaymentSale;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 
 class EnviosController extends Component
@@ -453,6 +454,9 @@ class EnviosController extends Component
 
             DB::beginTransaction();
             $LoteForPresentacion = $this->haveLot($saleDetail->presentaciones_id);
+            if(!$LoteForPresentacion){
+                return response()->json(['message' => 'No existe lote para esta presentación: '], 400);
+            }
             $saleDetail->lot_id = $LoteForPresentacion->id;
             $saleDetail->scanned = true;
             $saleDetail->save();
@@ -465,8 +469,10 @@ class EnviosController extends Component
             Cache::put('scanned_product_keys_' . $sale->id, $scannedProductKeys, 60);
 
             $allScanned = $this->checkIfAllScanned($sale->id);
-
-            if ($allScanned) {
+            if ($allScanned === null) {
+                return response()->json(['message' => 'Ocurrió un error inesperado durante el escaneo. Por favor, intenta nuevamente.'], 400);
+            }
+            if ($allScanned === true) {
                 $this->updateActual($sale->id);
                 Cache::forget('scanned_product_keys_' . $sale->id);
 
@@ -477,7 +483,7 @@ class EnviosController extends Component
             DB::commit();
 
             return response()->json([
-                'message' => $allScanned
+                'message' => $allScanned === true
                     ? 'Todos los codigos QR han sido escaneados.'
                     : 'Pase al siguiente producto.'
             ], 200);
@@ -521,22 +527,43 @@ class EnviosController extends Component
 
     private function checkIfAllScanned($ventaId)
     {
-        $pending = SaleDetail::where('sale_id', $ventaId)
+        try {
+            $pending = SaleDetail::where('sale_id', $ventaId)
             ->where('scanned', false)
-            ->count();
-
-        return $pending === 0;
+            ->count();      
+            return $pending === 0;
+        } catch (Exception $e) {
+            Log::error("Error al verificar paquetes escaneados para la venta ID {$ventaId}: " . $e->getMessage());
+            return null;
+        }
     }
 
-    public function updateFinApi($id)
+    public function updateFinApi($id, Request $request)
     {
-        $sale = Sale::findOrFail($id);
 
-        $sale->status_envio = 'FIN';
-        $sale->fecha_firma = now();
-        $sale->save();
+        try {
+            $request->validate([
+                'signature' => 'required|file|max:10240',
+            ]);
+            
+            $signature = $request->file('signature');            
 
-        $cliente = Customer::findOrFail($sale->CustomerID);
+            $signatureName = uniqid() . '_.' . $signature->extension();
+			$signature->storeAs('public/signatures', $signatureName);
+            $sale = Sale::findOrFail($id);
+            if (!$sale) {
+               return response()->json(['success' => false, 'message' => 'No existe la orden']);
+            }
+            $sale->status_envio = 'FIN';
+            $sale->fecha_firma = now();
+            $sale->signature = $signatureName;
+            $sale->save();
+
+            $cliente = Customer::findOrFail($sale->CustomerID);
+            return response()->json(['success' => true, 'message' => 'Order updated successfully']);
+        } catch (Exception $e) {
+            return response()->json(['message' => 'Error al actualizar orden', 'error' => $e->getMessage()], 500);
+        }
 
         try{
             Mail::to($cliente->email)->send(new EnvioFin($sale));

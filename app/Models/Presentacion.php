@@ -59,6 +59,10 @@ class Presentacion extends Model
 		return $this->belongsTo(Lotes::class);
 	}
 
+    public function lotes()
+    {
+        return $this->hasMany(Lotes::class,'SKU','id');
+    }
     public function consumos()
     {
         return $this->hasMany(Consumo::class, 'presentacion_id', 'id');

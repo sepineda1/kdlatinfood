@@ -62,7 +62,7 @@ Route::get('/sales/{id}', [DespachosController::class, 'getSaleDetails']);
 Route::put('/sales/cargar/{id}', [DespachosController::class, 'cargarSale']);
 //Route::put('/sales/cargar2/{id}', [DespachosController::class, 'cargarSale2']);
 
-Route::put('/sales/FIN/{id}', [EnviosController::class, 'updateFinApi']);
+Route::post('/sales/FIN/{id}', [EnviosController::class, 'updateFinApi']);
 Route::get('/sales/detalle/pendiente/{id}', [DespachosController::class, 'getSaleDetailsPendiente']); 
 Route::put('/decrementProductSale/{quantity}/{saleDetailId}/{userID}', [DespachosController::class, 'decrementQuantityToSale']);
 Route::put('/sale/paymentSaleRegistrer', [EnviosController::class,'paymentSaleRegistrer']);

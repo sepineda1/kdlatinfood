@@ -42,6 +42,7 @@ use App\Models\quickbook_credentials;
 use App\Http\Controllers\ProductoWooController;
 use App\Services\QuickBooksService;
 use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 
 
 class ProductsController extends Component
@@ -2023,10 +2024,13 @@ class ProductsController extends Component
     {
         try {
             // Obtener las presentaciones junto con el producto y el tamaño
-            $presentaciones = Presentacion::with(['product', 'size'])
+            $presentaciones = Presentacion::with(['product', 'size', 'lotes'])
                 ->whereHas('product', function ($query) {
                     $query->where('TieneKey', 'si');
                 })
+                ->whereHas('lotes', function ($query) {
+                    $query->where('Fecha_Vencimiento', '>', Carbon::parse(Carbon::now())->format('Y-m-d'));
+                })                
                 ->get()
                 ->sortBy(function ($presentacion) {
                     return $presentacion->product->category->name; // Ordenar por categoría del producto
@@ -2059,7 +2063,7 @@ class ProductsController extends Component
                         'image' => $presentacion->product->image,
                         'tam' => $presentacion->product->tam1,
                         'estado' => $presentacion->product->estado,
-                    ]
+                    ]                    
                 ];
             }
 

@@ -5,8 +5,11 @@ use App\Models\Sale;
 use App\Models\Presentacion;
 use App\Models\Discounts;
 use App\Models\User;
+use App\Models\DeliveryType;
 use App\Models\Inspectors;
 use App\Models\Customer;
+use App\Models\PaymentSale;
+use App\Models\ServicePay;
 use App\Services\QuickBooksService;
 use Exception;
 use Illuminate\Support\Facades\DB;
@@ -14,20 +17,17 @@ use App\Models\Lotes;
 use Illuminate\Support\Facades\Log;
 
 trait SaleTrait{
-
-
     // ----------------------------------------------------------------
     // AGREGAR UN PRODUCTO A LA VENTA
     // ----------------------------------------------------------------
     public function addProductoToSaleCore($saleId, $barcode, $quantity, $responseJSON = false, $userID = null)
     {
         try {
-
+            
             $ModelSale = Sale::find($saleId);
             if (!isset($ModelSale->id)) {
                 return $this->responses('La ORDEN no existe', 404, $responseJSON, 'sale-error');
-            }
-
+            }            
             $ModelPresentacion = Presentacion::where('barcode', $barcode)->first();
 
             if (isset($ModelPresentacion->id)) {
@@ -43,7 +43,7 @@ trait SaleTrait{
                 return $this->responses('La cantidad NO puede ser CERO o menor a CERO.', 404, $responseJSON, 'sale-error');
             }
 
-            if ($ModelSale->customer->saldo <= 0) {
+            if ($ModelSale->customer->saldo <= 0 && $ModelSale->payment_type_id == 1) {
                 return $this->responses('El cliente NO tiene saldo Disponible.', 404, $responseJSON, 'sale-error');
             }
             $LoteForPresentacion = Lotes::where('SKU', $ModelPresentacion->id)
@@ -94,10 +94,11 @@ trait SaleTrait{
             if ($Discount > 0) {
                 $price -= ($Discount * $price) / 100;
             }
-
-            $saldo = $ModelSale->customer->saldo - ($price * $quantity);
-            if ($saldo <= 0) {
-                return $this->responses('El cliente NO tiene saldo Disponible.', 404, $responseJSON, 'sale-error');
+            if ($ModelSale->payment_type_id == 1) {
+                $saldo = $ModelSale->customer->saldo - ($price * $quantity);
+                if ($saldo <= 0) {
+                    return $this->responses('El cliente NO tiene saldo Disponible.', 404, $responseJSON, 'sale-error');
+                }
             }
 
             DB::beginTransaction();
@@ -151,24 +152,26 @@ trait SaleTrait{
                 $ModelSale->save();
 
             }else{
-                $ModelCostumer = Customer::find($ModelSale->customer->id);
-                $ModelCostumer->saldo -= $price * $quantity;
-                $ModelCostumer->save();
+                if ($ModelSale->payment_type_id == 1) {                
+                    $ModelCostumer = Customer::find($ModelSale->customer->id);
+                    $ModelCostumer->saldo -= $price * $quantity;
+                    $ModelCostumer->save();
+                }
             } 
 
             if(!$responseJSON){
                 $userID = Auth()->user()->id;
             }
+            $paymentSale = PaymentSale::where('sale_id', $ModelSale->id)
+                        ->where('payment_type_id', $ModelSale->payment_type_id)
+                        ->first();                    
+            if(!$paymentSale){
+                return $this->responses('La orden no tiene tipo de pago', 404, $responseJSON, 'sale-error');
+            }
+            $paymentSale->amount += $price * $quantity;
+            $paymentSale->save();
             if($userID != null){
-                try{
-                    $paymentSale = PaymentSale::where('sale_id', $ModelSale->id)
-                                            ->where('payment_type_id', $ModelSale->payment_type_id)
-                                            ->first();;
-                    if(!$paymentSale){
-                        return $this->responses('La orden no tiene tipo de pago', 404, $responseJSON, 'sale-error');
-                    }
-                    $paymentSale->amount += $price * $quantity;
-                    $paymentSale->save();
+                try{ 
                     $user = User::find($userID);
                     $accion = sprintf(
                         'Se agregó %d unid. (sin escanear) del producto #%d %s a la orden #%d (estado: %s)',
@@ -300,12 +303,27 @@ trait SaleTrait{
                         \Log::error('No se pudo agregar el mensaje al inspector en la seccion elminar orden: ' . $e);
                     }
                 }
-            }
+            }            
             if($Sale->items < 1 || $Sale->total == 0){
                 //eliminar de la venta
                 $Sale1 = Sale::find($SaleID);
                 $status = $Sale1->status_envio;
-                $this->decrementInPaymentSale($Sale1, true);
+                 
+                if ($Sale1->payment_type_id == 1) {                 
+                    $montoService = 0;                    
+                    $deliveryType = DeliveryType::where('sale_id',$Sale1->id)->first();                                                            
+                    if($deliveryType->deliverytype_id != 3){                                            
+                        $services = ServicePay::where('customer_id', $Sale1->CustomerID)->get();                                            
+                        foreach ($services as $service) {
+                            if((int) $service->state === 1){
+                                $montoService += $service->amount;
+                            }
+                        }
+                    }
+                    $cashSobrante += $montoService; 
+
+                }                             
+                $this->decrementInPaymentSale($Sale1, true, $cashSobrante);
                 $Sale1 ->delete();
                 $SaleDeleted = true;
                 $QUICK = new QuickBooksService();
@@ -326,8 +344,8 @@ trait SaleTrait{
                     }
                 }  
 
-            }else{
-                $this->decrementInPaymentSale($Sale, false);
+            }else{                
+                $this->decrementInPaymentSale($Sale, false, $cashSobrante);
                 $QUICK = new QuickBooksService();
                 $QUICK->updateInvoice($SaleID);
             }
@@ -338,11 +356,13 @@ trait SaleTrait{
                     $Sale->cash -= $cashSobrante;
                     $Sale->save();
                 }
-            }else{
+            }else{                
                 //Agregando al cupo del cliente
-                $customer = Customer::find($Sale->customer->id);
-                $customer->saldo += $cashSobrante; 
-                $customer->save();             
+                if ($Sale->payment_type_id == 1) {
+                    $customer = Customer::find($Sale->customer->id);
+                    $customer->saldo += $cashSobrante; 
+                    $customer->save();
+                }            
             }
             DB::commit();
             if(!$responseJSON){
@@ -382,22 +402,21 @@ trait SaleTrait{
         }
     } 
     
-    public function decrementInPaymentSale(Sale $Sale, $deletePaymentSale)
+    public function decrementInPaymentSale(Sale $Sale, $deletePaymentSale, $cashSobrante)
     {
-        try {
-
+        try {            
             if ($deletePaymentSale) {
                 PaymentSale::where('sale_id', $Sale->id)->delete();
                 return;
             }
             $paymentSale = PaymentSale::where('sale_id', $Sale->id)
                                         ->where('payment_type_id', $Sale->payment_type_id)
-                                        ->first();;
+                                        ->first();
             if(!$paymentSale){
                 throw 'La orden no tiene tipo de pago';
             }
-            $paymentSale->amount -= $price * $quantity;
-            $paymentSale->save();  
+            $paymentSale->amount -= $cashSobrante;
+            $paymentSale->save();
         } catch (Exception $e) {
             return $this->responses('Hubo un error: ' . $e->getMessage(), 500, $responseJSON, 'sale-error');
         }

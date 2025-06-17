@@ -18,6 +18,7 @@ use App\Models\Product;
 use App\Models\Operario;
 use App\Models\Lotes;
 use App\Models\SaleDetail;
+use App\Models\DeliveryType;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 use Livewire\WithPagination;
@@ -28,9 +29,15 @@ use App\Services\QuickBooksService;
 use App\Models\Discounts;
 use Illuminate\Support\Facades\DB;
 use App\Traits\SaleTrait;
+use App\Contracts\ServicePayServiceInterface;
 
 class DespachosController extends Component
 {
+    protected $servicePay;
+    public function __construct(ServicePayServiceInterface $servicePay)
+    {
+        $this->servicePay = $servicePay;
+    }    
     use SaleTrait;
 
     // --- New properties for live polling and sound ---
@@ -834,7 +841,7 @@ class DespachosController extends Component
 
     public function decrementQuantityToSale($quantity, $saleDetailId, $userID)
     {
-        try{
+        try{            
             return $this->decrementQuantityCore( $quantity, $saleDetailId, false, true, $userID);
 
         } catch (Exception $e){
@@ -1468,13 +1475,15 @@ class DespachosController extends Component
         $sale->total_cajas -= $cajas;
         $sale->save();
 
-        $Customer = Customer::find($sale->CustomerID);
-        $Customer->saldo += $quantity * $price;
-        $Customer->save();
+        if ($sale->payment_type_id == 1) {
+            $Customer = Customer::find($sale->CustomerID);
+            $Customer->saldo += $quantity * $price;
+            $Customer->save();
+        }
 
         $sale->items -= $quantity;
         $sale->save();
-        $this->decrementInPaymentSale($sale, false);     
+        $this->decrementInPaymentSale($sale, false, ($quantity * $price));     
 
         $product = Presentacion::find($presentacion_id);
         $product->stock_box += $quantity; //Cantidad de Cajas que hay en el inventario
@@ -1508,24 +1517,41 @@ class DespachosController extends Component
 
         try {
             $saleDetails = SaleDetail::where('sale_id', $saleId)->get();
-
+            $cashSobrante = 0;
             foreach ($saleDetails as $detail) {
                 $product = Presentacion::find($detail->presentaciones_id);
                 if ($product) {
                     $product->stock_box += $detail->quantity;
                     $product->save();
                 }
-
+                
+                $cashSobrante += ($detail->price - ($detail->price * $detail->discount) / 100) * $detail->quantity;
                 $detail->delete();
-            }
-
+            }             
             $sale = Sale::find($saleId);
             if ($sale) {
-                $this->decrementInPaymentSale($sale, true);
+                if ($sale->payment_type_id == 1) {                    
+                    $montoService = 0;                     
+                    $deliveryType = DeliveryType::where('sale_id',$saleId)->first();                    
+                    if($deliveryType->deliverytype_id != 3){                                                
+                        $services = $this->servicePay->getServicePayByCustomerId($sale->CustomerID);                       
+                        foreach ($services as $service) {
+                            if((int) $service->state === 1){
+                                $montoService += $service->amount;
+                            }
+                        }
+                    }                    
+                    $customer = Customer::find($sale->customer->id);
+                    $customer->saldo += $cashSobrante +$montoService; 
+                    $customer->save();
+
+                }                  
+                //$this->decrementInPaymentSale($sale, true, $sale->$cashSobrante);
                 $sale->delete();
                 $QUICK = new QuickBooksService();
                 $QUICK->deleteInvoice($saleId);
-            }        
+            }
+            
             DB::commit();
             if($userID != null){
                 try{
